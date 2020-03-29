@@ -1,0 +1,29 @@
+{
+  "name": "amazon-refresh",
+  "version": "1.0.0",
+  "main": "dist/index.js",
+  "scripts": {
+    "start": "npx tsc && node dist/index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/pikalaw/amazon-refresh.git"
+  },
+  "bugs": {
+    "url": "https://github.com/pikalaw/amazon-refresh/issues"
+  },
+  "homepage": "https://github.com/pikalaw/amazon-refresh#readme",
+  "description": "",
+  "dependencies": {
+    "selenium-webdriver": "^4.0.0-alpha.7"
+  },
+  "devDependencies": {
+    "@types/node": "^13.9.5",
+    "@types/selenium-webdriver": "^4.0.9",
+    "tslint": "^6.1.0",
+    "typescript": "^3.8.3"
+  }
+}
