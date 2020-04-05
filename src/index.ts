@@ -46,11 +46,14 @@ async function login(driver: ThenableWebDriver, credential: Credential) {
   const email = await readyElement(driver, By.name("email"));
   await email.sendKeys(credential.email);
 
-  const password = await readyElement(driver, By.name("password"));
+  const continueButton = await readyElement(driver, By.id("continue"));
+  await continueButton.click();
+
+  const password = await readyElement(driver, By.id("ap_password"));
   await password.sendKeys(credential.password);
 
-  const submit = await readyElement(driver, By.id("signInSubmit"));
-  await submit.click();
+  const signInSubmit = await readyElement(driver, By.id("signInSubmit"));
+  return signInSubmit.click();
 }
 
 async function main() {
