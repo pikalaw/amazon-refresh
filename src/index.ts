@@ -17,16 +17,16 @@ async function getCredential(): Promise<Credential> {
     output: process.stdout
   });
 
-	function ask(question: string) {
-		return new Promise<string>((resolve) => {
-			rl.question(question, answer => resolve(answer));
-		});
-	}
+  function ask(question: string) {
+    return new Promise<string>((resolve) => {
+      rl.question(question, answer => resolve(answer));
+    });
+  }
 
-	const email = await ask('Login email: ');
-	const password = await ask('Login password: ');
+  const email = await ask('Login email: ');
+  const password = await ask('Login password: ');
 
-	return {email, password};
+  return {email, password};
 }
 
 async function readyElement(driver: ThenableWebDriver, locator: ByClass) {
@@ -58,7 +58,7 @@ async function main() {
       .forBrowser("safari")
       .build();
 
-	const credential = await getCredential();
+  const credential = await getCredential();
   await login(driver, credential);
 }
 
