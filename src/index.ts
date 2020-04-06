@@ -32,7 +32,7 @@ async function getCredential(): Promise<Credential> {
 async function readyElement(driver: ThenableWebDriver, locator: ByClass) {
   await driver.wait(until.elementLocated(locator));
   const element = await driver.findElement(locator);
-  await driver.wait(until.elementIsVisible(element));
+  // await driver.wait(until.elementIsVisible(element));
   await driver.wait(until.elementIsEnabled(element));
   return element;
 }
@@ -53,7 +53,25 @@ async function login(driver: ThenableWebDriver, credential: Credential) {
   await password.sendKeys(credential.password);
 
   const signInSubmit = await readyElement(driver, By.id("signInSubmit"));
-  return signInSubmit.click();
+  await signInSubmit.click();
+}
+
+async function goToCart(driver: ThenableWebDriver) {
+  const allCarts = await readyElement(driver, By.css("a#nav-cart"));
+  await allCarts.click();
+
+  const wholeFoodBuyBox = await readyElement(driver, By.id("sc-alm-buy-box"));
+  const wholeFoodCheckoutButton = await wholeFoodBuyBox.findElement(
+      By.css('input[name^="proceedToALMCheckout-"]'));
+  await wholeFoodCheckoutButton.click();
+
+  const continueButton = await readyElement(
+      driver, By.css('a[name="proceedToCheckout"]'));
+  await continueButton.click();
+
+  const continue2Button = await readyElement(
+      driver, By.css('#subsContinueButton input[type="submit"]'));
+  await continue2Button.click();
 }
 
 async function main() {
@@ -61,8 +79,14 @@ async function main() {
       .forBrowser("safari")
       .build();
 
+  await driver.manage().window().maximize();
+
   const credential = await getCredential();
   await login(driver, credential);
+
+  await goToCart(driver);
+
+  await driver.sleep(60 * 1000);
 }
 
 main()
