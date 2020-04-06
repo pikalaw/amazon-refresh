@@ -32,46 +32,81 @@ async function getCredential(): Promise<Credential> {
 async function readyElement(driver: ThenableWebDriver, locator: ByClass) {
   await driver.wait(until.elementLocated(locator));
   const element = await driver.findElement(locator);
-  // await driver.wait(until.elementIsVisible(element));
+  await driver.wait(until.elementIsVisible(element));
   await driver.wait(until.elementIsEnabled(element));
   return element;
+}
+
+async function readyClick(driver: ThenableWebDriver, element: WebElement) {
+  await driver.actions().move({origin: element}).click(element).perform();
 }
 
 async function login(driver: ThenableWebDriver, credential: Credential) {
   await driver.get("https://www.amazon.com");
 
   const signin = await readyElement(driver, By.css('[data-nav-role="signin"]'))
-  await signin.click();
+  await readyClick(driver, signin);
 
   const email = await readyElement(driver, By.name("email"));
   await email.sendKeys(credential.email);
 
   const continueButton = await readyElement(driver, By.id("continue"));
-  await continueButton.click();
+  await readyClick(driver, continueButton);
 
   const password = await readyElement(driver, By.id("ap_password"));
   await password.sendKeys(credential.password);
 
   const signInSubmit = await readyElement(driver, By.id("signInSubmit"));
-  await signInSubmit.click();
+  await readyClick(driver, signInSubmit);
 }
 
 async function goToCart(driver: ThenableWebDriver) {
   const allCarts = await readyElement(driver, By.css("a#nav-cart"));
-  await allCarts.click();
+  await readyClick(driver, allCarts);
 
   const wholeFoodBuyBox = await readyElement(driver, By.id("sc-alm-buy-box"));
   const wholeFoodCheckoutButton = await wholeFoodBuyBox.findElement(
       By.css('input[name^="proceedToALMCheckout-"]'));
-  await wholeFoodCheckoutButton.click();
+  await readyClick(driver, wholeFoodCheckoutButton);
 
   const continueButton = await readyElement(
       driver, By.css('a[name="proceedToCheckout"]'));
-  await continueButton.click();
+  await readyClick(driver, continueButton);
 
   const continue2Button = await readyElement(
       driver, By.css('#subsContinueButton input[type="submit"]'));
-  await continue2Button.click();
+  await readyClick(driver, continue2Button);
+
+  // Wait until the next page loads.
+  const availabilityMessageLocator = By.css(
+      ".ufss-date-select-toggle-text-availability");
+  await driver.wait(until.elementLocated(availabilityMessageLocator));
+}
+
+async function lookForAvailability(driver: ThenableWebDriver) {
+  await driver.navigate().refresh();
+
+  const availabilityMessageLocator = By.css(
+      ".ufss-date-select-toggle-text-availability");
+  await driver.wait(until.elementLocated(availabilityMessageLocator));
+  const availabilityMessages = await driver.findElements(
+      availabilityMessageLocator);
+
+  for (const availabilityMessage of availabilityMessages) {
+    const text = await availabilityMessage.getText();
+    console.log(text);
+  }
+
+  const availabilitySlots = await driver.findElements(
+      By.css(".ufss-available"));
+
+  return availabilitySlots.length > 0;
+}
+
+async function playYoutube(driver: ThenableWebDriver) {
+
+
+  await driver.sleep(10 * 60 * 1000);  // 10 minutes
 }
 
 async function main() {
@@ -86,7 +121,20 @@ async function main() {
 
   await goToCart(driver);
 
-  await driver.sleep(60 * 1000);
+  const waitCheckSec = 30;
+  while (true) {
+    const now = new Date();
+    console.log(`Checking on ${now}`);
+    const found: boolean = await lookForAvailability(driver);
+    if (found) {
+      break;
+    }
+    console.log(`Sigh... Trying again in ${waitCheckSec} seconds`);
+    await driver.sleep(waitCheckSec * 1000);
+  }
+
+  console.log("Found!");
+  await playYoutube(driver);
 }
 
 main()
