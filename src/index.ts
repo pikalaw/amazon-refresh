@@ -5,6 +5,7 @@ const readline = require('readline');
 const webdriver = require("selenium-webdriver");
 const By = webdriver.By;
 const until = webdriver.until;
+const Key = webdriver.Key;
 
 interface Credential {
   email: string;
@@ -104,9 +105,9 @@ async function lookForAvailability(driver: ThenableWebDriver) {
 }
 
 async function playYoutube(driver: ThenableWebDriver) {
-
-
-  await driver.sleep(10 * 60 * 1000);  // 10 minutes
+  // TODO: figure out if this can be done within webdriver directly.
+  await driver.executeScript(
+      'window.open("https://www.youtube.com/watch?v=dCE4y9O7vTM","_blank");');
 }
 
 async function main() {
@@ -121,7 +122,7 @@ async function main() {
 
   await goToCart(driver);
 
-  const waitCheckSec = 30;
+  const waitCheckSec = 20;
   while (true) {
     const now = new Date();
     console.log(`Checking on ${now}`);
@@ -135,6 +136,10 @@ async function main() {
 
   console.log("Found!");
   await playYoutube(driver);
+
+  // Leave the window open to allow the human to come see the screen.
+  await driver.sleep(10 * 60 * 1000);  // 10 minutes.
+  await driver.close();
 }
 
 main()
