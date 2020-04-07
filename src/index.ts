@@ -1,5 +1,4 @@
 import type { ThenableWebDriver, WebElement, By as ByClass } from "selenium-webdriver";
-export {}
 
 const readline = require('readline');
 const webdriver = require("selenium-webdriver");
@@ -26,7 +25,6 @@ async function getCredential(): Promise<Credential> {
 
   const email = await ask('Login email: ');
   const password = await ask('Login password: ');
-
   return {email, password};
 }
 
@@ -93,14 +91,13 @@ async function lookForAvailability(driver: ThenableWebDriver) {
 
   const availabilitySlots = await driver.findElements(
       By.css(".ufss-available"));
-
   return availabilitySlots.length > 0;
 }
 
-async function playYoutube(driver: ThenableWebDriver) {
+async function playYoutube(driver: ThenableWebDriver, videoId: string) {
   // TODO: figure out if this can be done within webdriver directly.
   await driver.executeScript(
-      'window.open("https://www.youtube.com/watch?v=dCE4y9O7vTM","_blank");');
+      `window.open("https://www.youtube.com/watch?v=${videoId}","_blank");`);
 }
 
 async function main() {
@@ -129,7 +126,7 @@ async function main() {
   }
 
   console.log("Found!");
-  await playYoutube(driver);
+  await playYoutube(driver, "dCE4y9O7vTM");
 
   // Leave the window open to allow the human to come see the screen.
   await driver.sleep(10 * 60 * 1000);  // 10 minutes.
