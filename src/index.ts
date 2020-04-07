@@ -4,7 +4,6 @@ const readline = require('readline');
 const webdriver = require("selenium-webdriver");
 const By = webdriver.By;
 const until = webdriver.until;
-const Key = webdriver.Key;
 
 interface Credential {
   email: string;
