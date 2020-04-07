@@ -77,16 +77,9 @@ async function goToCart(driver: ThenableWebDriver) {
   const continue2Button = await readyElement(
       driver, By.css('#subsContinueButton input[type="submit"]'));
   await readyClick(driver, continue2Button);
-
-  // Wait until the next page loads.
-  const availabilityMessageLocator = By.css(
-      ".ufss-date-select-toggle-text-availability");
-  await driver.wait(until.elementLocated(availabilityMessageLocator));
 }
 
 async function lookForAvailability(driver: ThenableWebDriver) {
-  await driver.navigate().refresh();
-
   const availabilityMessageLocator = By.css(
       ".ufss-date-select-toggle-text-availability");
   await driver.wait(until.elementLocated(availabilityMessageLocator));
@@ -132,6 +125,7 @@ async function main() {
     }
     console.log(`Sigh... Trying again in ${waitCheckSec} seconds`);
     await driver.sleep(waitCheckSec * 1000);
+    await driver.navigate().refresh();
   }
 
   console.log("Found!");
