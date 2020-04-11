@@ -7,6 +7,7 @@ import type {
 const readline = require("readline");
 const webdriver = require("selenium-webdriver");
 const By = webdriver.By;
+const Key = webdriver.Key;
 const until = webdriver.until;
 
 interface Credential {
@@ -75,7 +76,8 @@ async function login(
 async function checkUntilAvailable(
   driver: ThenableWebDriver,
   buyBoxId: string,
-  isAvailable: (driver: ThenableWebDriver) => Promise<boolean>
+  isAvailable: (driver: ThenableWebDriver) => Promise<boolean>,
+  refreshPage: (driver: ThenableWebDriver) => Promise<void>
 ): Promise<void> {
   while (true) {
     const now = new Date();
@@ -87,7 +89,7 @@ async function checkUntilAvailable(
     const waitCheckSec = Math.floor(Math.random() * 20 + 10);
     console.log(`Sigh... Trying again in ${waitCheckSec} seconds`);
     await driver.sleep(waitCheckSec * 1000);
-    await driver.navigate().refresh();
+    await refreshPage(driver);
   }
 }
 
@@ -146,6 +148,10 @@ async function lookForWholeFoodAvailability(
   return availabilitySlots.length > 0;
 }
 
+async function refreshWholeFoodPage(driver: ThenableWebDriver): Promise<void> {
+  await driver.navigate().refresh();
+}
+
 async function goToFreshCart(driver: ThenableWebDriver): Promise<void> {
   const allCarts = await readyElement(driver, By.css("a#nav-cart"));
   await readyClick(driver, allCarts);
@@ -173,7 +179,7 @@ async function lookForFreshAvailability(
   driver: ThenableWebDriver
 ): Promise<boolean> {
   const availabilityMessageLocator = By.css(
-    ".ufss-date-select-toggle-text-availability"
+    "#slot-container-UNATTENDED .a-size-base-plus"
   );
   await driver.wait(until.elementLocated(availabilityMessageLocator));
   const availabilityMessages = await driver.findElements(
@@ -183,28 +189,47 @@ async function lookForFreshAvailability(
   for (const availabilityMessage of availabilityMessages) {
     const text = await availabilityMessage.getText();
     console.log(text);
+    if (!text.includes("No doorstep delivery windows")) {
+      return true;
+    }
   }
 
-  const availabilitySlots = await driver.findElements(
-    By.css(".ufss-available")
-  );
-  return availabilitySlots.length > 0;
+  return false;
+}
+
+async function refreshFreshPage(driver: ThenableWebDriver): Promise<void> {
+  await driver.navigate().refresh();
+  // Allow the form dialog to pop up asking to resend form.
+  await driver.sleep(3 * 1000);
+  await driver.switchTo().alert().accept();
 }
 
 type ProductName = string;
 type GoToCartFunction = (d: ThenableWebDriver) => Promise<void>;
 type CheckAvailableFunction = (d: ThenableWebDriver) => Promise<boolean>;
+type RefreshFunction = (d: ThenableWebDriver) => Promise<void>;
 
 function getAmazonProductCallbacks(): [
   ProductName,
   GoToCartFunction,
-  CheckAvailableFunction
+  CheckAvailableFunction,
+  RefreshFunction
 ] {
   switch (process.argv[2]) {
     case "wholefood":
-      return ["WholeFood", goToWholeFoodCart, lookForWholeFoodAvailability];
+      return [
+        "WholeFood",
+        goToWholeFoodCart,
+        lookForWholeFoodAvailability,
+        refreshWholeFoodPage,
+      ];
     case "fresh":
-      return ["Fresh", goToFreshCart, lookForFreshAvailability];
+      return [
+        "Fresh",
+        goToFreshCart,
+        lookForFreshAvailability,
+        refreshFreshPage,
+      ];
     default:
       throw `Unknown Amazon product ${process.argv[2]}.`;
   }
@@ -217,9 +242,16 @@ async function main(): Promise<void> {
   const credential = await getCredential();
   await login(driver, credential);
 
-  const [productName, goToCart, checkAvailable] = getAmazonProductCallbacks();
+  const [
+    productName,
+    goToCart,
+    checkAvailable,
+    refresh,
+  ] = getAmazonProductCallbacks();
   await goToCart(driver);
-  await checkUntilAvailable(driver, productName, checkAvailable);
+  // Allow the cart page to load first.
+  await driver.sleep(10 * 1000);
+  await checkUntilAvailable(driver, productName, checkAvailable, refresh);
 
   console.log("Found!");
   await playYoutube(driver, "dCE4y9O7vTM");
