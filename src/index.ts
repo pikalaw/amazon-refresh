@@ -164,7 +164,7 @@ async function goToFreshCart(driver: ThenableWebDriver): Promise<void> {
 
   const continue2Button = await readyElement(
     driver,
-    By.css('#subsContinueButton input[type="submit"]')
+    By.css('input[name="continue-bottom"][type="submit"]')
   );
   await readyClick(driver, continue2Button);
 }
