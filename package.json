@@ -3,8 +3,13 @@
   "version": "1.0.0",
   "main": "dist/index.js",
   "scripts": {
-    "wholefood": "npx tsc && node dist/amazon.js wholefood",
-    "fresh": "npx tsc && node dist/amazon.js fresh",
+    "prewholefood": "npm run compile",
+    "wholefood": "node dist/amazon.js wholefood",
+    "prefresh": "npm run compile",
+    "fresh": "node dist/amazon.js fresh",
+    "prefreshdirect": "npm run compile",
+    "freshdirect": "node dist/fresh-direct.js",
+    "compile": "npx tsc",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
