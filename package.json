@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "main": "dist/index.js",
   "scripts": {
-    "wholefood": "npx tsc && node dist/index.js wholefood",
-    "fresh": "npx tsc && node dist/index.js fresh",
+    "wholefood": "npx tsc && node dist/amazon.js wholefood",
+    "fresh": "npx tsc && node dist/amazon.js fresh",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
