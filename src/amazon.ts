@@ -7,7 +7,6 @@ import type {
 const readline = require("readline");
 const webdriver = require("selenium-webdriver");
 const By = webdriver.By;
-const Key = webdriver.Key;
 const until = webdriver.until;
 
 interface Credential {
@@ -86,7 +85,7 @@ async function checkUntilAvailable(
     if (found) {
       break;
     }
-    const waitCheckSec = Math.floor(Math.random() * 20 + 10);
+    const waitCheckSec = Math.floor(Math.random() * 10 + 5);
     console.log(`Sigh... Trying again in ${waitCheckSec} seconds`);
     await driver.sleep(waitCheckSec * 1000);
     await refreshPage(driver);
