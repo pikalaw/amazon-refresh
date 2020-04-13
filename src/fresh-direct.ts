@@ -56,9 +56,7 @@ async function login(
 ): Promise<void> {
   await driver.manage().window().maximize();
   await driver.get("https://www.freshdirect.com");
-
-  const signin = await readyElement(driver, By.id("locabar_user_login_link"));
-  await readyClick(driver, signin);
+  await driver.navigate().to("https://www.freshdirect.com/login/login.jsp");
 
   const email = await readyElement(driver, By.id("email"));
   await email.sendKeys(credential.email);
