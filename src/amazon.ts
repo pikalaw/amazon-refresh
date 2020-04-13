@@ -152,16 +152,7 @@ async function refreshWholeFoodPage(driver: ThenableWebDriver): Promise<void> {
   await driver.navigate().refresh();
 }
 
-async function goToFreshCart(driver: ThenableWebDriver): Promise<void> {
-  const allCarts = await readyElement(driver, By.css("a#nav-cart"));
-  await readyClick(driver, allCarts);
-
-  const freshBuyBox = await readyElement(driver, By.id("sc-fresh-buy-box"));
-  const freshCheckoutButton = await freshBuyBox.findElement(
-    By.css('input[name^="proceedToALMCheckout-"]')
-  );
-  await readyClick(driver, freshCheckoutButton);
-
+async function doubleContinueOnFreshCart(driver: ThenableWebDriver): Promise<void> {
   const continueButton = await readyElement(
     driver,
     By.css('a[name="proceedToCheckout"]')
@@ -173,6 +164,19 @@ async function goToFreshCart(driver: ThenableWebDriver): Promise<void> {
     By.css('input[name="continue-bottom"][type="submit"]')
   );
   await readyClick(driver, continue2Button);
+}
+
+async function goToFreshCart(driver: ThenableWebDriver): Promise<void> {
+  const allCarts = await readyElement(driver, By.css("a#nav-cart"));
+  await readyClick(driver, allCarts);
+
+  const freshBuyBox = await readyElement(driver, By.id("sc-fresh-buy-box"));
+  const freshCheckoutButton = await freshBuyBox.findElement(
+    By.css('input[name^="proceedToALMCheckout-"]')
+  );
+  await readyClick(driver, freshCheckoutButton);
+
+  await doubleContinueOnFreshCart(driver);
 }
 
 async function lookForFreshAvailability(
@@ -198,10 +202,13 @@ async function lookForFreshAvailability(
 }
 
 async function refreshFreshPage(driver: ThenableWebDriver): Promise<void> {
+  // Refreshing the page prompts the user to resubmit the form, which webdriver
+  // does not seem to have a way to do so.
+  // But this trick below bypasses that.
+  await driver.navigate().back();
+  await driver.navigate().back();
   await driver.navigate().refresh();
-  // Allow the form dialog to pop up asking to resend form.
-  await driver.sleep(3 * 1000);
-  await driver.switchTo().alert().accept();
+  await doubleContinueOnFreshCart(driver);
 }
 
 type ProductName = string;
